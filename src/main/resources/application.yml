@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: Dota2ItemTracker
+  datasource:
+    url: jdbc:postgresql://localhost:5433/postgres
+    username: postgres
+    password: 120198
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+steam:
+  api:
+    key: 3FC955192506F0D6A7AC6F56F5319307
+
+logging:
+  level:
+    org:
+      springframework:
+        web: DEBUG
+        csrf: DEBUG
