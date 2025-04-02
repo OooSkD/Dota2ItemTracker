@@ -71,9 +71,10 @@ public class ItemService {
         salesHistoryRepository.save(salesHistory);
     }
 
-    public Price updatePriceItem(String marketHashName) {
+    public Price updatePriceItem(String marketHashName) throws InterruptedException {
         PriceOverviewDto priceData = steamApiService.getItemPriceOverview(marketHashName);
         List<Price> priceByItem = priceRepository.findByItemMarketHashName(marketHashName);
+        Thread.sleep(2000);
         Price price;
         if (priceByItem == null || priceByItem.isEmpty()) {
             price = new Price();
@@ -90,7 +91,7 @@ public class ItemService {
         return priceRepository.save(price);
     }
 
-    public Integer updatePriceForAllItems() {
+    public Integer updatePriceForAllItems() throws InterruptedException {
         List<Item> itemsToUpdate = itemRepository.findByNeedUpdateTrue(); // Найти все предметы, которые нужно обновить
         int updatedCount = 0;
 
@@ -136,7 +137,7 @@ public class ItemService {
         return null;
     }
 
-    public void addItemsByCount(Integer quantity) throws JsonProcessingException {
+    public void addItemsByCount(Integer quantity) throws JsonProcessingException, InterruptedException {
         int start = 0;
         int count = 100;
         while (start < quantity) {
@@ -144,16 +145,21 @@ public class ItemService {
                 count = quantity - start;
             }
             FullItemsListDto itemData = steamApiService.getItemsByCount(start, count);
+            if (itemData == null || itemData.getResults() == null || itemData.getResults().isEmpty()) {
+                break;
+            }
 
             for (FullItemsListDto.Item item : itemData.getResults()) {
                 Long classIdItemFromApi = Long.parseLong(item.getAssetDescription().getClassid());
-                Item itemFromDB = itemRepository.findByClassid(classIdItemFromApi);
+                String marketHashNameFromApi = item.getAssetDescription().getMarketHashName();
+                Item itemFromDB = itemRepository.findByMarketHashNameOrClassid(marketHashNameFromApi, classIdItemFromApi);
                 if (itemFromDB != null) {
+                    Thread.sleep(3000);
                     continue;
                 }
                 Item newItem = new Item();
                 newItem.setName(item.getName());
-                newItem.setMarketHashName(item.getAssetDescription().getMarketHashName());
+                newItem.setMarketHashName(marketHashNameFromApi);
                 newItem.setClassid(classIdItemFromApi);
                 setAdditionalInfoItem(newItem);
 

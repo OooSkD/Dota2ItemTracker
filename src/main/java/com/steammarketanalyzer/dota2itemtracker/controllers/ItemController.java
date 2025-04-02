@@ -31,13 +31,13 @@ public class ItemController {
     }
 
     @PostMapping("/updatePriceItem")
-    public String updatePriceItem(@RequestParam String marketHashName) {
+    public String updatePriceItem(@RequestParam String marketHashName) throws InterruptedException {
         Price price = itemService.updatePriceItem(marketHashName);
         return gson.toJson(price);
     }
 
     @PostMapping("/updatePriceForAllItems")
-    public String updatePriceForAllItems() {
+    public String updatePriceForAllItems() throws InterruptedException {
         Integer count = itemService.updatePriceForAllItems();
         return "Обновлено строк" + count;
     }
@@ -61,7 +61,7 @@ public class ItemController {
     }
 
     @PostMapping("/addItemsByCount")
-    public ResponseEntity<Item> addItemsByCount(@RequestParam Integer count) throws JsonProcessingException {
+    public ResponseEntity<Item> addItemsByCount(@RequestParam Integer count) throws JsonProcessingException, InterruptedException {
         if (count == 0) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }

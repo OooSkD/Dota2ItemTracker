@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .inputContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .inputContainer input {
+            width: 250px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+
+        #buttonContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .button {
+            position: relative;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 250px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .button:disabled {
+            background-color: gray;
+            cursor: not-allowed;
+        }
+
+        .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid white;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .timer {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .cat-container {
+            margin-top: 20px;
+        }
+
+        .cat-container img {
+            width: 200px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="title">Анализ предметов Dota 2</div>
+
+    <div id="buttonContainer">
+        <button class="button" onclick="loadItems(this)">Загрузить items <span class="spinner"></span></button>
+        <div class="inputContainer">
+            <label for="itemCount">Введите количество items для загрузки</label>
+            <input type="number" id="itemCount" name="count" placeholder="Введите количество">
+        </div>
+        <button class="button" onclick="updatePrices(this)">Обновить цену для всех items <span class="spinner"></span>
+        </button>
+        <button class="button" onclick="fullUpdate(this)">Пересоздать таблицу анализа цен <span class="spinner"></span>
+        </button>
+        <button class="button" onclick="updatePriceAnalysis(this)">Обновить анализ цен <span class="spinner"></span>
+        </button>
+    </div>
+
+    <div class="timer" id="timer"></div>
+
+    <div class="cat-container">
+        <img src="https://cataas.com/cat" alt="Random Cat">
+    </div>
+</div>
+
+<script>
+    let timerInterval;
+    let startTime;
+
+    function startTimer() {
+        startTime = Date.now(); // Сохраняем время начала
+        clearInterval(timerInterval); // Очищаем предыдущий таймер, если есть
+        timerInterval = setInterval(() => {
+            const elapsed = Date.now() - startTime;
+            const seconds = Math.floor(elapsed / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            document.getElementById('timer').innerText = `Время работы: ${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+        document.getElementById('timer').innerText = ""; // Очистить текст таймера
+    }
+
+    function handleRequest(url, button) {
+        button.disabled = true;
+        const originalHTML = button.innerHTML;
+
+        const spinner = button.querySelector(".spinner");
+        if (spinner) spinner.style.display = "inline-block";
+
+        startTimer();
+
+        fetch(url, {method: 'POST'})
+            .then(response => response.json())
+            .then(data => {
+                alert(`Операция завершена: ${data}`);
+            })
+            .catch(error => {
+                console.error("Ошибка:", error);
+            })
+            .finally(() => {
+                stopTimer();
+                button.disabled = false; // Разблокировать кнопку
+                if (spinner) spinner.style.display = "none"; // Скрыть спиннер
+                button.innerHTML = originalHTML;  // Возвращаем оригинальный текст кнопки
+            });
+    }
+
+    function loadItems(button) {
+        const count = document.getElementById("itemCount").value;
+        if (!count) {
+            alert("Введите количество для загрузки.");
+            return;
+        }
+        handleRequest(`http://localhost:8080/itemManagement/addItemsByCount?count=${count}`, button);
+    }
+
+    function updatePrices(button) {
+        handleRequest('http://localhost:8080/itemManagement/updatePriceForAllItems', button);
+    }
+
+    function fullUpdate(button) {
+        handleRequest('http://localhost:8080/price-analysis/full-update', button);
+    }
+
+    function updatePriceAnalysis(button) {
+        handleRequest('http://localhost:8080/price-analysis/update', button);
+    }
+</script>
+</body>
+</html>

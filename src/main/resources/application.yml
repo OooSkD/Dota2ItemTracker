@@ -10,7 +10,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-    show-sql: true
+    show-sql: false
 steam:
   api:
     key: 3FC955192506F0D6A7AC6F56F5319307

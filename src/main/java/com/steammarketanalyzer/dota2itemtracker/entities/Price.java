@@ -2,7 +2,6 @@ package com.steammarketanalyzer.dota2itemtracker.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.data.rest.core.annotation.RestResource;
 
 @Entity
 @Data

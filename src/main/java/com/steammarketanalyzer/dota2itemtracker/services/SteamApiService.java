@@ -103,6 +103,8 @@ public class SteamApiService {
                 .uri(url)
                 .retrieve()
                 .bodyToMono(String.class)
+                .timeout(Duration.ofSeconds(5))  // Устанавливаем таймаут 5 секунд
+                .retry(3)  // Повторяем запрос 3 раза при ошибках
                 .block();  // Ожидаем ответа синхронно
         System.out.println(response);
 
