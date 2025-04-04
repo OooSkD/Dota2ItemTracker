@@ -21,3 +21,5 @@ logging:
       springframework:
         web: DEBUG
         csrf: DEBUG
+proxy:
+  useProxy: false

@@ -31,24 +31,6 @@ public class SteamApiService {
         this.webClient = webClient;
     }
 
-
-    // Метод для получения информации о ценах предметов
-    public PriceOverviewDto getItemPriceOverview(String marketHashName) {
-        String url = "/priceoverview?appid=570&currency=1&market_hash_name=" + marketHashName;
-
-        String response = webClient.get()
-                .uri(url)
-                .retrieve()
-                .bodyToMono(String.class)
-                .retryWhen(Retry.backoff(10, Duration.ofSeconds(10)) // 10 попыток с интервалом 10 секунд
-                        .filter(throwable -> throwable instanceof WebClientResponseException.TooManyRequests)) // Retry only on 429
-                .block(); // Блокируем поток, чтобы дождаться ответа (можно заменить на асинхронку)
-
-
-        return gson.fromJson(response, PriceOverviewDto.class);
-    }
-
-
     // Метод для получения подробной информации о предмете
     public ItemInfoDto getItemInfo(Long classid) throws JsonProcessingException {
         String url = UriComponentsBuilder.fromHttpUrl("https://api.steampowered.com/ISteamEconomy/GetAssetClassInfo/v1/")

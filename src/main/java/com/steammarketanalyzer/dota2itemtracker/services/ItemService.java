@@ -23,56 +23,22 @@ import static com.steammarketanalyzer.dota2itemtracker.utils.ServiceUtils.parseP
 public class ItemService {
 
     private final SteamApiService steamApiService;
+    private final PriceService priceService;
     private final ItemRepository itemRepository;
     private final PriceRepository priceRepository;
     private final SalesHistoryRepository salesHistoryRepository;
 
-    public ItemService(SteamApiService steamApiService, ItemRepository itemRepository,
+    public ItemService(SteamApiService steamApiService, PriceService priceService, ItemRepository itemRepository,
                        PriceRepository priceRepository, SalesHistoryRepository salesHistoryRepository) {
         this.steamApiService = steamApiService;
+        this.priceService = priceService;
         this.itemRepository = itemRepository;
         this.priceRepository = priceRepository;
         this.salesHistoryRepository = salesHistoryRepository;
     }
 
-    // Метод для получения данных по предмету и сохранения их в базу
-    public void saveItemData(String marketHashName, Long classid) {
-        // 1. Получаем цену предмета
-        PriceOverviewDto priceData = steamApiService.getItemPriceOverview(marketHashName);
-
-        // 2. Получаем информацию о предмете
-        //String itemInfo = steamApiService.getItemInfo(classid);
-
-        // 3. Сохраняем предмет в базу данных, если его там нет
-        if (!itemRepository.existsByMarketHashName(marketHashName)) {
-            Item item = new Item();
-            item.setMarketHashName(marketHashName);
-            item.setClassid(classid);
-            // TODO: здесь добавим другие необходимые данные из classInfo или priceData
-
-            itemRepository.save(item);
-        }
-
-        // 4. Преобразуем полученные данные в объект цены и сохраняем его в базу
-        // TODO:  нужно найти существующую и переписать
-        Price price = new Price();
-        price.setItem(itemRepository.findByMarketHashName(marketHashName));
-        price.setCurrency("USD");  // TODO: сделать динамическим в зависимости от ответа
-        // TODO:  Здесь надо разобрать priceData и присвоить данные
-
-        priceRepository.save(price);
-
-        // 5. Преобразуем полученные данные о продажах и сохраняем их в SalesHistory
-        SalesHistory salesHistory = new SalesHistory();
-        salesHistory.setItem(itemRepository.findByMarketHashName(marketHashName));
-        salesHistory.setCurrency("USD");  // TODO: сделать динамическим в зависимости от ответа
-        // TODO: Здесь тоже нужно разобрать данные
-
-        salesHistoryRepository.save(salesHistory);
-    }
-
     public Price updatePriceItem(String marketHashName) throws InterruptedException {
-        PriceOverviewDto priceData = steamApiService.getItemPriceOverview(marketHashName);
+        PriceOverviewDto priceData = priceService.getItemPriceOverview(marketHashName);
         List<Price> priceByItem = priceRepository.findByItemMarketHashName(marketHashName);
         Thread.sleep(2000);
         Price price;
@@ -86,7 +52,7 @@ public class ItemService {
         }
         price.setLowestPrice(parsePriceFromString(priceData.getLowestPrice()));
         price.setMedianPrice(parsePriceFromString(priceData.getMedianPrice()));
-        price.setVolumeDay(priceData.getVolume() == null ? null : Long.parseLong(priceData.getVolume()));
+        price.setVolumeDay(priceData.getVolume() == null ? null : Long.parseLong(priceData.getVolume().replace(",", "")));
         price.setTimestamp(ServiceUtils.getNow());
         return priceRepository.save(price);
     }

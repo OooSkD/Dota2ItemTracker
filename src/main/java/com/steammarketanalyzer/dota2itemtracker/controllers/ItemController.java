@@ -23,13 +23,6 @@ public class ItemController {
         this.itemService = itemService;
     }
 
-    // Получаем и сохраняем данные о предмете
-    @GetMapping("/saveItemData")
-    public String saveItemData(@RequestParam String marketHashName, @RequestParam Long classid) {
-        itemService.saveItemData(marketHashName, classid);
-        return "Data saved successfully!";
-    }
-
     @PostMapping("/updatePriceItem")
     public String updatePriceItem(@RequestParam String marketHashName) throws InterruptedException {
         Price price = itemService.updatePriceItem(marketHashName);
